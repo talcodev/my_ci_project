@@ -1,30 +1,52 @@
-name: Python CI
+name: Python CI and Docker Build
 
-# מתי להפעיל את הרובוט? בכל פעם שעושים דחיפה (Push) לענף הראשי
 on:
   push:
     branches: [ "main" ]
 
-jobs:
-  build-test:
-    runs-on: ubuntu-latest  # מחשב לינוקס וירטואלי
+# הגדרה חשובה: נותנים לרובוט אישור לכתוב למחסן החבילות של גיטהאב
+permissions:
+  packages: write
+  contents: read
 
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
     steps:
-    # שלב 1: תוריד את הקוד מהמחסן
+    # 1. מורידים את הקוד
     - uses: actions/checkout@v3
 
-    # שלב 2: תתקין פייתון גרסה 3.9
+    # 2. מגדירים פייתון ומריצים טסטים (כמו מקודם)
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
         python-version: "3.9"
 
-    # שלב 3: תתקין את הספריות מתוך הקובץ שלנו
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
 
-    # שלב 4: תריץ את הבדיקות!
-    - name: Run Tests with pytest
+    - name: Run Tests
       run: |
         pytest
+
+    # --- מכאן מתחיל החלק החדש של הדוקר ---
+
+    # 3. מתחברים למחסן של גיטהאב (Login)
+    - name: Log in to the Container registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # 4. בונים את האימג' ושולחים אותו
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        # כאן אנחנו נותנים שם לאימג' על בסיס שם הפרויקט שלך
+        # שימי לב: הכל חייב להיות באותיות קטנות (Lowercase)
+        tags: ghcr.io/${{ github.repository }}/my-app:latest
