@@ -1,0 +1,30 @@
+name: Python CI
+
+# מתי להפעיל את הרובוט? בכל פעם שעושים דחיפה (Push) לענף הראשי
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest  # מחשב לינוקס וירטואלי
+
+    steps:
+    # שלב 1: תוריד את הקוד מהמחסן
+    - uses: actions/checkout@v3
+
+    # שלב 2: תתקין פייתון גרסה 3.9
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    # שלב 3: תתקין את הספריות מתוך הקובץ שלנו
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    # שלב 4: תריץ את הבדיקות!
+    - name: Run Tests with pytest
+      run: |
+        pytest
