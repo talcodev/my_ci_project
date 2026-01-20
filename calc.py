@@ -3,4 +3,4 @@ def add(x: int, y: int) -> int:
 
 
 if __name__ == "__main__":
-    print("Hello from Docker! The result of 5 + 3 is:", add(5, 3))
+    print("🚀 Version 2 is LIVE! 5 + 3 =", add(5, 3))
